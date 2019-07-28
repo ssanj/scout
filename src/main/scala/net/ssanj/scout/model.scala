@@ -58,7 +58,7 @@ object Thread {
   
   object Group {
     case object System extends Group
-    final case class SubGroup(name: String, activeCount: Count, maxPriority: Priority, daemon: IsDaemon, destroyed: IsDestroyed, parent: () => Group) extends Group
+    final case class SubGroup(name: String, activeCount: Count, maxPriority: Priority, daemon: IsDaemon, destroyed: IsDestroyed, parentName: String) extends Group
   }
 
   final case class ClassName(value: String)

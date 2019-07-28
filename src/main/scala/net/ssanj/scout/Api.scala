@@ -3,7 +3,18 @@ package net.ssanj.scout
 import java.lang.{Thread => JThread, ThreadGroup => JThreadGroup}
 import net.ssanj.scout.Thread._
 
-object api {
+object Api {
+
+  def getAllThreadInfo(): Vector[Info] = {
+    import scala.collection.JavaConverters._
+    JThread.getAllStackTraces().keySet().asScala.map(getThreadInfo).toVector
+  }
+
+  def groupedThreads(): Map[String, Vector[Info]] = getAllThreadInfo.groupBy { 
+    case Info(_, _, _, _, _, Group.System, _, _) => "System"
+    case Info(_, _, _, _, _, Group.SubGroup(name, _, _, _, _, _), _, _) => name
+  }
+
   def getThreadInfo(jThread: JThread): Info = {
     val id = Id(jThread.getId())
     val name = jThread.getName()
@@ -52,9 +63,9 @@ object api {
       val maxPriority = getPriority(jtg.getMaxPriority())
       val daemon = if (jtg.isDaemon()) IsDaemon.Daemon else IsDaemon.UI
       val destroyed = if (jtg.isDestroyed()) IsDestroyed.Destroyed else IsDestroyed.NotDestroyed
-      val parent = () => getGroup(jtg.getParent())
+      val parentName = Option(jtg.getParent()).map(ptg => ptg.getName()).getOrElse("System")
 
-      Group.SubGroup(name = name, activeCount = activeCount, maxPriority = maxPriority, daemon = daemon, destroyed = destroyed, parent = parent)
+      Group.SubGroup(name = name, activeCount = activeCount, maxPriority = maxPriority, daemon = daemon, destroyed = destroyed, parentName = parentName)
     }.getOrElse(Group.System)
   }
 
