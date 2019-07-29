@@ -2,7 +2,7 @@ package net.ssanj.scout
 
 // import java.lang.{Thread => JThread}
 import Api._
-import Printer.showInfo
+import Printer._
 
 object Runner {
 
@@ -11,10 +11,6 @@ object Runner {
     // println(showInfo(info, ","))
     // JThread.currentThread().getThreadGroup().list()
     // getAllThreadInfo().foreach(t => println(showInfo(t)))
-    println(
-      groupedThreads().toVector.sortBy(_._1).map {
-        case (k, v) => s"${k} -> ${v.map(showInfo).mkString(",")}"
-      }.mkString("\n")
-    )
+    println(showGroupedThreads(groupedThreads()))
   }
 }

@@ -54,11 +54,23 @@ object Thread {
 
   final case class Attributes(alive: IsAlive, daemon: IsDaemon, interrupted: IsInterrupted)
 
+  object Attributes {
+    def isAlive(alive: IsAlive): Boolean = alive == IsAlive.Alive
+    def isDaemon(daemon: IsDaemon): Boolean = daemon == IsDaemon.Daemon
+    def isInterrupted(interrupted: IsInterrupted): Boolean = interrupted == IsInterrupted.Interrupted
+  }
+
   sealed trait Group extends Product with Serializable
   
   object Group {
     case object System extends Group
-    final case class SubGroup(name: String, activeCount: Count, maxPriority: Priority, daemon: IsDaemon, destroyed: IsDestroyed, parentName: String) extends Group
+    final case class SubGroup(name: String, activeCount: Count, maxPriority: Priority, daemon: IsDaemon, destroyed: IsDestroyed, parent: Group) extends Group
+
+    def getName(group: Group): String = group match {
+      case System => "system"
+      case SubGroup(name, _, _, _, _, _) => name
+
+    }
   }
 
   final case class ClassName(value: String)

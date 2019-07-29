@@ -15,6 +15,13 @@ object Api {
     case Info(_, _, _, _, _, Group.SubGroup(name, _, _, _, _, _), _, _) => name
   }
 
+  def findParentThreadGroups(group: Group): Vector[Group] = {
+    group match {
+      case Group.System => Vector.empty[Group]
+      case Group.SubGroup(_, _, _, _, _, parent) =>  group +: findParentThreadGroups(parent)
+    }
+  }
+
   def getThreadInfo(jThread: JThread): Info = {
     val id = Id(jThread.getId())
     val name = jThread.getName()
@@ -33,7 +40,7 @@ object Api {
 
     val attributes = getAttributes(jThread)
 
-    val stackTraces = getStackTraces(jThread.getStackTrace())
+    val stackTraces = Nil//getStackTraces(jThread.getStackTrace())
 
     val className = ClassName(jThread.getClass.getName)
 
@@ -63,9 +70,9 @@ object Api {
       val maxPriority = getPriority(jtg.getMaxPriority())
       val daemon = if (jtg.isDaemon()) IsDaemon.Daemon else IsDaemon.UI
       val destroyed = if (jtg.isDestroyed()) IsDestroyed.Destroyed else IsDestroyed.NotDestroyed
-      val parentName = Option(jtg.getParent()).map(ptg => ptg.getName()).getOrElse("System")
+      val parent = getGroup(jtg.getParent())//Option(jtg.getParent()).map(ptg => ptg.getName()).getOrElse("System")
 
-      Group.SubGroup(name = name, activeCount = activeCount, maxPriority = maxPriority, daemon = daemon, destroyed = destroyed, parentName = parentName)
+      Group.SubGroup(name = name, activeCount = activeCount, maxPriority = maxPriority, daemon = daemon, destroyed = destroyed, parent = parent)
     }.getOrElse(Group.System)
   }
 
