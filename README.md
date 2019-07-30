@@ -1,7 +1,7 @@
-# boon [ ![Download](https://api.bintray.com/packages/ssanj/maven/scout/images/download.svg) ](https://bintray.com/ssanj/maven/scout/_latestVersion)
+# Scout [ ![Download](https://api.bintray.com/packages/ssanj/maven/scout/images/download.svg) ](https://bintray.com/ssanj/maven/scout/_latestVersion)
 
 
-# Scout #
+> /skaʊt/ (verb) to examine, inspect, or observe for the purpose of obtaining information
 
 A small tool to quickly dump out information about running Threads and Thread groups
 
