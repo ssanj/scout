@@ -5,6 +5,8 @@ import net.ssanj.scout.Api._
 
 object Printer {
 
+  val nl = System.lineSeparator
+
   def showInfo(info: Info): String = {
     List(
       s"id=${info.id.value}",
@@ -36,16 +38,19 @@ object Printer {
     val groupedThreadsSortedByKey = groupedThreads.toVector.sortBy(_._1)
 
     val groupToThreads = groupedThreadsSortedByKey.map {
-      case (k, v) => s"${k}:\n${indent}${v.map(showInfoShort).mkString(s"\n${indent}")}"
-    }.mkString("\n")
+      case (k, v) =>
+        val values: Map[String, String] = v.groupBy(_.name.split("-").dropRight(1).mkString("-")).
+          mapValues(_.map(showInfoShort).mkString(s"${nl}${indent}"))
+        s"${k}:${nl}${indent}${values.map(_._2).mkString(s"${nl}${indent}")}"
+    }.mkString(nl)
 
     val groupLineage = {
       val uniqueGroups = groupedThreads.values.toVector.flatMap(_.map(_.group)).toSet.toVector
-       val lineage = uniqueGroups.map(g => findParentThreadGroups(g).map(Group.getName).mkString(" > ")).mkString(s"\n${indent}")
-       s"groups:\n${indent}${lineage}"
+       val lineage = uniqueGroups.map(g => findParentThreadGroups(g).map(Group.getName).mkString(" > ")).mkString(s"${nl}${indent}")
+       s"groups:${nl}${indent}${lineage}"
     }
 
-    s"${groupLineage}\n\n${groupToThreads}"
+    s"${groupLineage}${nl}${nl}${groupToThreads}"
   }
 
   private def showGroup(group: Group): String = group match {
