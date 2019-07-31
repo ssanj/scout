@@ -41,7 +41,7 @@ object CustomThreadFactory {
       def run(): Unit = {
         while(true) {
           println("-" * 100)
-          println(showGroupedThreads(groupedThreads()))
+          println(showGroupedThreads(groupedThreads(), showInfoShort))
           sleep(2000)
         }
       }

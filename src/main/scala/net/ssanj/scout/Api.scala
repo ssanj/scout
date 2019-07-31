@@ -40,7 +40,7 @@ object Api {
 
     val attributes = getAttributes(jThread)
 
-    val stackTraces = Nil//getStackTraces(jThread.getStackTrace())
+    val stackTraces = getStackTraces(jThread.getStackTrace())
 
     val className = ClassName(jThread.getClass.getName)
 

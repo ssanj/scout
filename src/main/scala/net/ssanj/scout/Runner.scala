@@ -11,6 +11,6 @@ object Runner {
     // println(showInfo(info, ","))
     // JThread.currentThread().getThreadGroup().list()
     // getAllThreadInfo().foreach(t => println(showInfo(t)))
-    println(showGroupedThreads(groupedThreads()))
+    println(showGroupedThreads(groupedThreads(), showInfoShort))
   }
 }
