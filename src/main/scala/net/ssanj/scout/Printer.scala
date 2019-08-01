@@ -1,6 +1,6 @@
 package net.ssanj.scout
 
-import net.ssanj.scout.Thread._
+import net.ssanj.scout.model._
 import net.ssanj.scout.Api._
 
 object Printer {
@@ -67,7 +67,7 @@ object Printer {
 
     val groupToThreads = groupedThreadsSortedByKey.map {
       case (k, v) =>
-        val values: Map[String, String] = v.groupBy(_.name.split("-").dropRight(1).mkString("-")).
+        val values: Map[String, String] = v.groupBy(_.name.value.split("-").dropRight(1).mkString("-")).
           mapValues(_.map(showInfo).mkString(s"${nl}${indent}"))
         s"${k}:${nl}${indent}${values.map(_._2).mkString(s"${nl}${indent}")}"
     }.mkString(nl)

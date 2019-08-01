@@ -12,7 +12,7 @@ object Runner {
     // getAllThreadInfo().foreach(t => println(showInfo(t)))
     // println(showGroupedThreads(groupedThreads(Nil), showInfoShort))
     // val regMatch = raw"run-main".r
-    val filters = Vector.empty[Filter]//Vector(Filter(FilterBy.ThreadName(regMatch), FilterType.Keep))
+    val filters = List.empty[Filter]//Vector(Filter(FilterBy.ThreadName(regMatch), FilterType.Keep))
     println(showGroupedThreads(groupedThreads(filters), showInfoShort))
   }
 }

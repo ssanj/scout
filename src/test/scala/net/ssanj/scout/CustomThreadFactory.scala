@@ -1,7 +1,6 @@
 package net.ssanj.scout
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.Executors
-import java.lang.{Thread => JThread}
 import java.util.concurrent.atomic.AtomicInteger
 import Api._
 import Printer._
@@ -14,18 +13,18 @@ object CustomThreadFactory {
     private val count = new AtomicInteger(0)
 
 
-    def newThread(runnable: Runnable): JThread = {
+    def newThread(runnable: Runnable): Thread = {
       val threadGroup = new ThreadGroup("named-thread-factory-group")
-      new JThread(threadGroup, runnable, s"my-thread-${count.getAndIncrement()}")
+      new Thread(threadGroup, runnable, s"my-thread-${count.getAndIncrement()}")
     }
   }
 
  val scoutGroup = new ThreadGroup("scout")  
 
-  def getThreadName(): String = JThread.currentThread().getName()
+  def getThreadName(): String = Thread.currentThread().getName()
 
   def sleep(delay: Int): Unit = {
-    JThread.sleep(delay)
+    Thread.sleep(delay)
   }
 
   def createChatty(message: String): Runnable = new Runnable {
@@ -36,20 +35,20 @@ object CustomThreadFactory {
     }
   }
 
-  def scoutThread(): JThread = {
+  def scoutThread(): Thread = {
     val task = new Runnable() {
       def run(): Unit = {
         while(true) {
           println("-" * 100)
-          println(showGroupedThreads(groupedThreads(Vector.empty[Filter]), showInfoShort))
+          println(showGroupedThreads(groupedThreads(List.empty[Filter]), showInfoShort))
           sleep(2000)
         }
       }
     }
-    new JThread(scoutGroup, task, "scout-dumper")
+    new Thread(scoutGroup, task, "scout-dumper")
   }
 
-  def exitThread(exec: ExecutorService): JThread = new JThread(scoutGroup, new Runnable(){
+  def exitThread(exec: ExecutorService): Thread = new Thread(scoutGroup, new Runnable(){
     def run(): Unit = {
       val banner = ("=" * 50)      
       println(s"${banner} waiting for threads to complete ${banner}")

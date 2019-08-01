@@ -2,7 +2,7 @@ package net.ssanj.scout
 
 import scala.util.matching.Regex
 
-object Thread {
+object model {
   final case class Id(value: Long)
   final case class Count(value: Int)
 
@@ -80,6 +80,7 @@ object Thread {
   }
 
   final case class ClassName(value: String)
+  final case class ThreadName(value: String)
   final case class FileName(value: String)
   final case class MethodName(value: String)
   final case class LineNumber(value: Int)
@@ -87,7 +88,7 @@ object Thread {
   final case class StackElementInfo(className: Option[ClassName], fileName: FileName, methodName: MethodName, lineNumber: Option[LineNumber])
 
   final case class Info(id: Id, 
-                        name: String, 
+                        name: ThreadName, 
                         className: ClassName,
                         priority: Priority, 
                         state: State,
@@ -101,7 +102,7 @@ sealed trait FilterBy extends Product with Serializable
 object FilterBy {
   final case class ThreadName(value: Regex) extends FilterBy
   final case class GroupName(value: Regex) extends FilterBy
-  final case class ThreadState(value: Thread.State) extends FilterBy
+  final case class ThreadState(value: model.State) extends FilterBy
 }
 
 sealed trait FilterType extends Product with Serializable
