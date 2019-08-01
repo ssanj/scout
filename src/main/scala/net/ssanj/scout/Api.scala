@@ -16,6 +16,7 @@ object Api {
         case _ => false 
       }
 
+      //TODO: rewrite with pattern match
       if (keeps.isEmpty && removes.nonEmpty) {
         removes.foldLeft(allThreadInfo.toVector) {
           case (acc, filter) => acc.filter(retainByFilter(filter, _))
@@ -45,11 +46,9 @@ object Api {
     case Filter(FilterBy.ThreadState(state), FilterType.Remove) => info.state != state
   }
 
-  def groupedThreads(filters: List[Filter]): Map[String, Vector[Info]] = getAllThreadInfo(filters).groupBy { 
-    case Info(_, _, _, _, _, Group.System, _, _) => "System"
-    case Info(_, _, _, _, _, Group.SubGroup(name, _, _, _, _, _), _, _) => name
-  }
-
+  def groupedThreads(filters: List[Filter]): Map[String, Vector[Info]] = 
+    getAllThreadInfo(filters).groupBy(t => Group.getName(t.group))
+  
   def findParentThreadGroups(group: Group): Vector[Group] = {
     group match {
       case Group.System => Vector.empty[Group]
