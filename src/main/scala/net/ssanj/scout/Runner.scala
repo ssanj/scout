@@ -1,6 +1,5 @@
 package net.ssanj.scout
 
-// import java.lang.{Thread => JThread}
 import Api._
 import Printer._
 
@@ -11,6 +10,8 @@ object Runner {
     // println(showInfo(info, ","))
     // JThread.currentThread().getThreadGroup().list()
     // getAllThreadInfo().foreach(t => println(showInfo(t)))
-    println(showGroupedThreads(groupedThreads(), showInfoShort))
+    // println(showGroupedThreads(groupedThreads(Nil), showInfoShort))
+    val regMatch = raw"run-main".r
+    println(showGroupedThreads(groupedThreads(List(Filter(FilterBy.ThreadName(regMatch), FilterType.Keep))), showInfoShort))
   }
 }

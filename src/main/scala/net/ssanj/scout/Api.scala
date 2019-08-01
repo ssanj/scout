@@ -5,12 +5,47 @@ import net.ssanj.scout.Thread._
 
 object Api {
 
-  def getAllThreadInfo(): Vector[Info] = {
+  def getAllThreadInfo(filters: List[Filter]): Vector[Info] = {
     import scala.collection.JavaConverters._
-    JThread.getAllStackTraces().keySet().asScala.map(getThreadInfo).toVector
+    val allThreadInfo = JThread.getAllStackTraces().keySet().asScala.map(getThreadInfo).toVector
+
+    if (filters.isEmpty) allThreadInfo
+    else {
+      val (keeps, removes)= filters.partition { 
+        case Filter(_, FilterType.Keep) => true 
+        case _ => false 
+      }
+
+      if (keeps.isEmpty && removes.nonEmpty) {
+        removes.foldLeft(allThreadInfo.toVector) {
+          case (acc, filter) => acc.filter(retainByFilter(filter, _))
+        }
+      } else if (keeps.nonEmpty && removes.isEmpty) {
+        keeps.foldLeft(Set.empty[Info]) {
+          case (acc, filter) => acc ++ allThreadInfo.filter(retainByFilter(filter, _))
+        }.toVector
+      } else if (keeps.nonEmpty && removes.nonEmpty) {
+        val uniqueKeeps = keeps.foldLeft(Set.empty[Info]) {
+          case (acc, filter) => acc ++ allThreadInfo.filter(retainByFilter(filter, _))
+        }
+
+        removes.foldLeft(uniqueKeeps.toVector) {
+          case (acc, filter) => acc.filter(retainByFilter(filter, _))
+        }       
+      } else Vector.empty[Info]
+    }
   }
 
-  def groupedThreads(): Map[String, Vector[Info]] = getAllThreadInfo.groupBy { 
+  def retainByFilter(filter: Filter, info: Info): Boolean = filter match {
+    case Filter(FilterBy.ThreadName(reg), FilterType.Keep)      => reg.findFirstIn(info.name).isDefined
+    case Filter(FilterBy.ThreadName(reg), FilterType.Remove)    => reg.findFirstIn(info.name).isEmpty
+    case Filter(FilterBy.GroupName(reg), FilterType.Keep)       => reg.findFirstIn(Group.getName(info.group)).isDefined
+    case Filter(FilterBy.GroupName(reg), FilterType.Remove)     => reg.findFirstIn(Group.getName(info.group)).isEmpty
+    case Filter(FilterBy.ThreadState(state), FilterType.Keep)   => info.state == state
+    case Filter(FilterBy.ThreadState(state), FilterType.Remove) => info.state != state
+  }
+
+  def groupedThreads(filters: List[Filter]): Map[String, Vector[Info]] = getAllThreadInfo(filters).groupBy { 
     case Info(_, _, _, _, _, Group.System, _, _) => "System"
     case Info(_, _, _, _, _, Group.SubGroup(name, _, _, _, _, _), _, _) => name
   }

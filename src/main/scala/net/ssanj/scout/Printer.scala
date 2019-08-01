@@ -73,9 +73,9 @@ object Printer {
     }.mkString(nl)
 
     val groupLineage = {
-      val uniqueGroups = groupedThreads.values.toVector.flatMap(_.map(_.group)).toSet.toVector
+      val uniqueGroups = groupedThreads.values.flatMap(_.map(_.group)).toSet.toVector
        val lineage = uniqueGroups.map(g => findParentThreadGroups(g).map(Group.getName).mkString(" > ")).mkString(s"${nl}${indent}")
-       s"groups:${nl}${indent}${lineage}"
+       s"groups:${nl}${indent}${lineage}" 
     }
 
     s"${groupLineage}${nl}${nl}${groupToThreads}"

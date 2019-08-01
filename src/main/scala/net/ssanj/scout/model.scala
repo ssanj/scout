@@ -1,5 +1,7 @@
 package net.ssanj.scout
 
+import scala.util.matching.Regex
+
 object Thread {
   final case class Id(value: Long)
   final case class Count(value: Int)
@@ -69,7 +71,11 @@ object Thread {
     def getName(group: Group): String = group match {
       case System => "system"
       case SubGroup(name, _, _, _, _, _) => name
+    }
 
+    def getCount(group: Group): String = group match {
+      case System => "*"
+      case SubGroup(_, Count(count), _, _, _, _) => count.toString
     }
   }
 
@@ -89,3 +95,19 @@ object Thread {
                         attributes: Attributes,
                         stackTraces: List[StackElementInfo]) 
 }
+
+sealed trait FilterBy extends Product with Serializable
+
+object FilterBy {
+  final case class ThreadName(value: Regex) extends FilterBy
+  final case class GroupName(value: Regex) extends FilterBy
+  final case class ThreadState(value: Thread.State) extends FilterBy
+}
+
+sealed trait FilterType extends Product with Serializable
+object FilterType {
+  case object Keep extends FilterType
+  case object Remove extends FilterType
+}
+
+final case class Filter(filter: FilterBy, fType: FilterType)
