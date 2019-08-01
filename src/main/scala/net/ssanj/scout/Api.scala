@@ -5,11 +5,12 @@ import net.ssanj.scout.Thread._
 
 object Api {
 
-  def getAllThreadInfo(filters: List[Filter]): Vector[Info] = {
-    import scala.collection.JavaConverters._
-    val allThreadInfo = JThread.getAllStackTraces().keySet().asScala.map(getThreadInfo).toVector
+  def getAllThreadInfo(filters: Vector[Filter]): Vector[Info] = {
+    getAllThreadInfoInternal(filters)(filterInfo(retainByFilter))
+  }
 
-    if (filters.isEmpty) allThreadInfo
+  def filterInfo(singleFilter: (Filter, Info) => Boolean)(threadInfos: Vector[Info], filters: Vector[Filter]): Vector[Info] = {
+    if (filters.isEmpty) threadInfos
     else {
       val (keeps, removes)= filters.partition { 
         case Filter(_, FilterType.Keep) => true 
@@ -18,23 +19,29 @@ object Api {
 
       //TODO: rewrite with pattern match
       if (keeps.isEmpty && removes.nonEmpty) {
-        removes.foldLeft(allThreadInfo.toVector) {
-          case (acc, filter) => acc.filter(retainByFilter(filter, _))
+        removes.foldLeft(threadInfos.toVector) {
+          case (acc, filter) => acc.filter(singleFilter(filter, _))
         }
       } else if (keeps.nonEmpty && removes.isEmpty) {
         keeps.foldLeft(Set.empty[Info]) {
-          case (acc, filter) => acc ++ allThreadInfo.filter(retainByFilter(filter, _))
+          case (acc, filter) => acc ++ threadInfos.filter(singleFilter(filter, _))
         }.toVector
       } else if (keeps.nonEmpty && removes.nonEmpty) {
         val uniqueKeeps = keeps.foldLeft(Set.empty[Info]) {
-          case (acc, filter) => acc ++ allThreadInfo.filter(retainByFilter(filter, _))
+          case (acc, filter) => acc ++ threadInfos.filter(singleFilter(filter, _))
         }
 
         removes.foldLeft(uniqueKeeps.toVector) {
-          case (acc, filter) => acc.filter(retainByFilter(filter, _))
+          case (acc, filter) => acc.filter(singleFilter(filter, _))
         }       
       } else Vector.empty[Info]
     }
+  }
+
+  def getAllThreadInfoInternal(filters: Vector[Filter])(filterFunc: (Vector[Info], Vector[Filter]) => Vector[Info]): Vector[Info] = {
+    import scala.collection.JavaConverters._
+    val allThreadInfo: Vector[Info] = JThread.getAllStackTraces().keySet().asScala.map(getThreadInfo).toVector
+    filterFunc(allThreadInfo, filters)
   }
 
   def retainByFilter(filter: Filter, info: Info): Boolean = filter match {
@@ -46,7 +53,7 @@ object Api {
     case Filter(FilterBy.ThreadState(state), FilterType.Remove) => info.state != state
   }
 
-  def groupedThreads(filters: List[Filter]): Map[String, Vector[Info]] = 
+  def groupedThreads(filters: Vector[Filter]): Map[String, Vector[Info]] = 
     getAllThreadInfo(filters).groupBy(t => Group.getName(t.group))
   
   def findParentThreadGroups(group: Group): Vector[Group] = {

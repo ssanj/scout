@@ -11,7 +11,8 @@ object Runner {
     // JThread.currentThread().getThreadGroup().list()
     // getAllThreadInfo().foreach(t => println(showInfo(t)))
     // println(showGroupedThreads(groupedThreads(Nil), showInfoShort))
-    val regMatch = raw"run-main".r
-    println(showGroupedThreads(groupedThreads(List(Filter(FilterBy.ThreadName(regMatch), FilterType.Keep))), showInfoShort))
+    // val regMatch = raw"run-main".r
+    val filters = Vector.empty[Filter]//Vector(Filter(FilterBy.ThreadName(regMatch), FilterType.Keep))
+    println(showGroupedThreads(groupedThreads(filters), showInfoShort))
   }
 }
