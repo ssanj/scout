@@ -87,14 +87,14 @@ object model {
 
   final case class StackElementInfo(className: Option[ClassName], fileName: FileName, methodName: MethodName, lineNumber: Option[LineNumber])
 
-  final case class Info(id: Id, 
-                        name: ThreadName, 
-                        className: ClassName,
-                        priority: Priority, 
-                        state: State,
-                        group: Group,
-                        attributes: Attributes,
-                        stackTraces: List[StackElementInfo]) 
+  final case class ScoutThread(id: Id, 
+                               name: ThreadName, 
+                               className: ClassName,
+                               priority: Priority, 
+                               state: State,
+                               group: Group,
+                               attributes: Attributes,
+                               stackTraces: List[StackElementInfo]) 
 }
 
 sealed trait FilterBy extends Product with Serializable

@@ -11,13 +11,13 @@ object Printer {
 
   val stackTraceIndent = " " * 4
 
-  def showInfo(info: Info): String = {
+  def showInfo(info: ScoutThread): String = {
     val threadInfo = showInfoWithoutStackTrace(info)
     val traces = showStackTraces(info.stackTraces)
     s"${threadInfo}${traces}"
   }
 
-  def showInfoWithoutStackTrace(info: Info): String = {
+  def showInfoWithoutStackTrace(info: ScoutThread): String = {
     List(
       s"id=${info.id.value}",
       s"name=${info.name}",
@@ -31,13 +31,13 @@ object Printer {
     ).mkString(",")
   }  
 
-  def showInfoShort(info: Info): String = {
+  def showInfoShort(info: ScoutThread): String = {
     val threadInfo = showInfoShortWithoutStackTrace(info)
     val traces = showStackTracesByDepth(info.stackTraces, 5)
     s"${threadInfo}${traces}"
   }
 
-  def showInfoShortWithoutStackTrace(info: Info): String = {
+  def showInfoShortWithoutStackTrace(info: ScoutThread): String = {
     List(
       s"id=${info.id.value}",
       s"name=${info.name}",
@@ -62,7 +62,7 @@ object Printer {
       mkString(s"${nl}${stackTraceIndent}", s"${nl}${stackTraceIndent}", "")
   }
 
-  def showGroupedThreads(groupedThreads: Map[String, Vector[Info]], showInfo: Info => String): String = {
+  def showGroupedThreads(groupedThreads: Map[String, Vector[ScoutThread]], showInfo: ScoutThread => String): String = {
     val groupedThreadsSortedByKey = groupedThreads.toVector.sortBy(_._1)
 
     val groupToThreads = groupedThreadsSortedByKey.map {

@@ -4,11 +4,11 @@ import net.ssanj.scout.model._
 
 object Api {
 
-  def getAllThreadInfo(filters: List[Filter]): Vector[Info] = {
+  def getAllThreadInfo(filters: List[Filter]): Vector[ScoutThread] = {
     getAllThreadInfoInternal(filters)(filterInfo(retainByFilter))
   }
 
-  def filterInfo(singleFilter: (Filter, Info) => Boolean)(threadInfos: Vector[Info], filters: List[Filter]): Vector[Info] = {
+  def filterInfo(singleFilter: (Filter, ScoutThread) => Boolean)(threadInfos: Vector[ScoutThread], filters: List[Filter]): Vector[ScoutThread] = {
     if (filters.isEmpty) threadInfos
     else {
       val (keeps, removes)= filters.partition { 
@@ -22,12 +22,12 @@ object Api {
           case (acc, filter) => acc.filter(singleFilter(filter, _))
         }
 
-        case (_ :: _, Nil) => keeps.foldLeft(Set.empty[Info]) {
+        case (_ :: _, Nil) => keeps.foldLeft(Set.empty[ScoutThread]) {
           case (acc, filter) => acc ++ threadInfos.filter(singleFilter(filter, _))
         }.toVector
 
         case (_ :: _, _ :: _) => 
-          val uniqueKeeps = keeps.foldLeft(Set.empty[Info]) {
+          val uniqueKeeps = keeps.foldLeft(Set.empty[ScoutThread]) {
             case (acc, filter) => acc ++ threadInfos.filter(singleFilter(filter, _))
           }
 
@@ -35,18 +35,18 @@ object Api {
             case (acc, filter) => acc.filter(singleFilter(filter, _))
           }       
 
-        case (Nil, Nil) => Vector.empty[Info]
+        case (Nil, Nil) => Vector.empty[ScoutThread]
       }
     }
   }
 
-  def getAllThreadInfoInternal(filters: List[Filter])(filterFunc: (Vector[Info], List[Filter]) => Vector[Info]): Vector[Info] = {
+  def getAllThreadInfoInternal(filters: List[Filter])(filterFunc: (Vector[ScoutThread], List[Filter]) => Vector[ScoutThread]): Vector[ScoutThread] = {
     import scala.collection.JavaConverters._
-    val allThreadInfo: Vector[Info] = Thread.getAllStackTraces().keySet().asScala.map(getThreadInfo).toVector
+    val allThreadInfo: Vector[ScoutThread] = Thread.getAllStackTraces().keySet().asScala.map(getThreadInfo).toVector
     filterFunc(allThreadInfo, filters)
   }
 
-  def retainByFilter(filter: Filter, info: Info): Boolean = filter match {
+  def retainByFilter(filter: Filter, info: ScoutThread): Boolean = filter match {
     case Filter(FilterBy.ThreadName(reg), FilterType.Keep)      => reg.findFirstIn(info.name.value).isDefined
     case Filter(FilterBy.ThreadName(reg), FilterType.Remove)    => reg.findFirstIn(info.name.value).isEmpty
     case Filter(FilterBy.GroupName(reg), FilterType.Keep)       => reg.findFirstIn(Group.getName(info.group)).isDefined
@@ -55,7 +55,7 @@ object Api {
     case Filter(FilterBy.ThreadState(state), FilterType.Remove) => info.state != state
   }
 
-  def groupedThreads(filters: List[Filter]): Map[String, Vector[Info]] = 
+  def groupedThreads(filters: List[Filter]): Map[String, Vector[ScoutThread]] = 
     getAllThreadInfo(filters).groupBy(t => Group.getName(t.group))
   
   def findParentThreadGroups(group: Group): Vector[Group] = {
@@ -65,7 +65,7 @@ object Api {
     }
   }
 
-  def getThreadInfo(jThread: Thread): Info = {
+  def getThreadInfo(jThread: Thread): ScoutThread = {
     val id = Id(jThread.getId())
     val name = ThreadName(jThread.getName())
     val priority = getPriority(jThread.getPriority())
@@ -87,14 +87,14 @@ object Api {
 
     val className = ClassName(jThread.getClass.getName)
 
-    Info(id = id , 
-         name = name,
-         className = className,
-         priority = priority, 
-         state = state, 
-         group = group, 
-         attributes = attributes, 
-         stackTraces = stackTraces)
+    ScoutThread(id = id , 
+                name = name,
+                className = className,
+                priority = priority, 
+                state = state, 
+                group = group, 
+                attributes = attributes, 
+                stackTraces = stackTraces)
   }
 
   def getPriority(priority: Int): Priority = priority match {
